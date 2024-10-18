@@ -1,0 +1,81 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, accuracy_score
+from google.colab import files
+
+# Upload the file
+uploaded = files.upload()
+
+# Assuming your data is in the first uploaded file
+file_name = list(uploaded.keys())[0] 
+
+# Load the data into a pandas DataFrame
+data = pd.read_csv(file_name) # Assuming your data is a CSV file
+
+
+
+# Preprocess the data
+# Convert categorical variables to numerical using LabelEncoder
+label_encoder = LabelEncoder()
+data['segment'] = label_encoder.fit_transform(data['segment'])
+data['trans'] = label_encoder.fit_transform(data['trans'])
+data['convert'] = label_encoder.fit_transform(data['convert'])
+
+# Features and target
+X = data[['segment', 'seat', 'trans', 'convert', 'price']]
+y = data['choice']
+
+# Standardize the feature variables
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=42)
+
+# Implement Logistic Regression
+model = LogisticRegression()
+model.fit(X_train, y_train)
+# Predicting the test set results
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+classification_rep = classification_report(y_test, y_pred)
+accuracy, classification_rep
+
+
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Plot the distribution of the target variable 'choice'
+plt.figure(figsize=(8, 5))
+sns.countplot(x='choice', data=data, palette='viridis')
+plt.title('Distribution of Choice')
+plt.xlabel('Choice')
+plt.ylabel('Count')
+plt.show()
+
+
+
+
+# Example new input data: [segment, seat, trans, convert, price]
+# Sample: segment='basic' (encoded as 0), seat=4, trans='manual' (encoded as 1), convert='no' (encoded as 0), price=32
+new_input = [[0, 4, 1, 0, 32]]
+
+# Standardize the new input using the same scaler
+new_input_scaled = scaler.transform(new_input)
+
+# Predict the choice for the new input
+new_prediction = model.predict(new_input_scaled)
+new_prediction_probability = model.predict_proba(new_input_scaled)
+new_prediction, new_prediction_probability
+
+
+
+
+
+
+
+
+
